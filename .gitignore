@@ -2,5 +2,6 @@
 routes/__pycache__
 core/__pycache__
 middleware/__pycache__
+/.idea
 .idea
 config/__pycache__/
