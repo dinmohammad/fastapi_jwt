@@ -1,27 +1,15 @@
 import hashlib
-
-from fastapi import FastAPI, Depends, Form
-from typing import Annotated
-
+from fastapi import FastAPI, Form
 from starlette.responses import RedirectResponse
-
 import models
-from database import engine, SessionLocal
-from sqlalchemy.orm import Session
+
+from core.helper import get_user_by_email
+from config.database import engine, db_dependency
+
+import routes.auth
 
 app = FastAPI()
 models.Base.metadata.create_all(bind=engine)
-
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-db_dependency = Annotated[Session, Depends(get_db)]
 
 
 @app.post("/customer/register/submit")
@@ -43,7 +31,7 @@ async def register(
     if password != confirm_password:
         return RedirectResponse("/?error=Passwords+do+not+match", 302)
 
-    existing_user = db.query(models.Customers).filter(models.Customers.email == email).first()
+    existing_user = await get_user_by_email(email, db, models.Customers)
     if existing_user:
         return RedirectResponse("/?error=Email+already+exists", 302)
 
@@ -58,3 +46,6 @@ async def register(
     db.commit()
     db.refresh(register_db)
     return RedirectResponse("/?success=Customer+Registration+successfully", 302)
+
+
+app.include_router(routes.auth.router)

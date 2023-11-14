@@ -1,7 +1,7 @@
 from sqlalchemy import TIMESTAMP, func
 from sqlalchemy.schema import Column
-from sqlalchemy.types import String, Integer, Boolean
-from database import Base
+from sqlalchemy.types import String, Integer
+from config.database import Base
 
 
 class Customers(Base):
