@@ -7,12 +7,13 @@ from core.helper import get_user_by_email
 from config.database import engine, db_dependency
 
 import routes.auth
+import  routes.customer
 
 app = FastAPI()
 models.Base.metadata.create_all(bind=engine)
 
 
-@app.post("/customer/register/submit")
+@app.post("/customer/register/submit", tags=["Registration"])
 async def register(
         db: db_dependency,
         name: str = Form(None),
@@ -47,5 +48,10 @@ async def register(
     db.refresh(register_db)
     return RedirectResponse("/?success=Customer+Registration+successfully", 302)
 
-
+# Auth route
 app.include_router(routes.auth.router)
+
+
+# Customer Booking post
+app.include_router(routes.customer.customer)
+
