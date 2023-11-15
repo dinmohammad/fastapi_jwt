@@ -1,7 +1,7 @@
 import hashlib
 from datetime import timedelta
 
-from fastapi import Form, APIRouter
+from fastapi import Form, APIRouter, Request
 from starlette import status
 from starlette.responses import RedirectResponse
 
@@ -44,3 +44,14 @@ async def customer_login(
             # return {"access_token": access_token, "token_type": "bearer", "user_type":1}
         return RedirectResponse("/?error=Account+is+banned", 302)
     return RedirectResponse("/?error=Invalid+email+or+password", 302)
+
+
+@router.post("/logout", tags=["Authentication"])
+async def logout():
+    response = RedirectResponse(
+        '/?success=Logged+out', 302
+    )
+    # response = RedirectResponse("/")
+    response.delete_cookie("access_token")
+    response.delete_cookie("refresh_token")
+    return response
