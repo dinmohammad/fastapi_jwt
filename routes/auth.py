@@ -2,13 +2,14 @@ import hashlib
 from datetime import timedelta
 
 from fastapi import Form, APIRouter, Request
+from sqlalchemy import null
 from starlette import status
 from starlette.responses import RedirectResponse
 
 import models
 from config.database import db_dependency, engine
 from core.auth_utils import ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_MINUTES, create_access_token, \
-    create_refresh_token
+    create_refresh_token, decode_token
 
 router = APIRouter()
 
@@ -47,11 +48,18 @@ async def customer_login(
 
 
 @router.post("/logout", tags=["Authentication"])
-async def logout():
+async def logout(db: db_dependency,request: Request):
     response = RedirectResponse(
         '/?success=Logged+out', 302
     )
-    # response = RedirectResponse("/")
     response.delete_cookie("access_token")
     response.delete_cookie("refresh_token")
+
+    token = request.cookies.get("access_token")
+    customer_data = await decode_token(token, db)
+    access_token_data = customer_data.access_token
+    # print(access_token_data, customer_data.user_type)
+    customer_data.access_token = "null"
+    db.commit()
+
     return response

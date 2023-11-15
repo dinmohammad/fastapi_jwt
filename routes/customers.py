@@ -37,6 +37,6 @@ async def Booking_request(
         db.add(booking_new_data)
         db.commit()
         db.refresh(booking_new_data)
-        return {"Login successfully", 302}
+        return {"Booking request send successfully"}
     except:
         return {"You are not Authorized! Please Login"}
