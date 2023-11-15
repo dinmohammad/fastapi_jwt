@@ -49,9 +49,9 @@ async def decode_token(token, db):
             payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[ALGORITHM])
             email = payload['sub']
             exp = payload['exp']
-            customer = await get_user_by_email(email, db, models.Customers)
-            if customer:
-                return customer
+            isCheckCustomer = await get_user_by_email(email, db, models.Customers)
+            if isCheckCustomer:
+                return isCheckCustomer
         except jwt.JWTError as e:
             print(f"Error decoding token: {e}")
             raise TokenDecodeError("You are not authorized")

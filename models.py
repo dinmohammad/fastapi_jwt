@@ -19,6 +19,7 @@ class Customers(Base):
     created_at = Column(TIMESTAMP, default=func.now())
 
 
+#
 class Trips(Base):
     __tablename__ = "trips"
 
@@ -29,4 +30,4 @@ class Trips(Base):
     destination = Column(String(100))
     status = Column(Integer, default=1)
     created_at = Column(TIMESTAMP, default=func.now())
-    customer = relationship('customers_db', backref='trips')
+    customer = relationship('Customers', backref='trips')

@@ -14,7 +14,7 @@ router = APIRouter()
 
 
 @router.post("/customer-login", status_code=status.HTTP_200_OK, tags=["Authentication"])
-async def drover_login_user(
+async def customer_login(
         db: db_dependency,
         email: str = Form(None),
         password: str = Form(None)

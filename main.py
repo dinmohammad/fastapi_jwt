@@ -4,13 +4,17 @@ from starlette.responses import RedirectResponse
 import models
 
 from core.helper import get_user_by_email
-from config.database import engine, db_dependency
+from config.database import engine, db_dependency, Base
 
 import routes.auth
-import  routes.customer
+import routes.customers
 
 app = FastAPI()
 models.Base.metadata.create_all(bind=engine)
+# Auth route
+app.include_router(routes.auth.router)
+# Customer Booking post
+app.include_router(routes.customers.customer)
 
 
 @app.post("/customer/register/submit", tags=["Registration"])
@@ -40,18 +44,10 @@ async def register(
     register_db = models.Customers(
         name=name,
         email=email,
-        password=hashed_password,
+        password=hashed_password
     )
     # print(name,email,password, hashed_password)
     db.add(register_db)
     db.commit()
     db.refresh(register_db)
     return RedirectResponse("/?success=Customer+Registration+successfully", 302)
-
-# Auth route
-app.include_router(routes.auth.router)
-
-
-# Customer Booking post
-app.include_router(routes.customer.customer)
-
