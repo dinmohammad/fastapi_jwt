@@ -1,10 +1,15 @@
+import hashlib
+from datetime import timedelta
+
 from fastapi import APIRouter, Form, Request
 from starlette import status
 from starlette.responses import RedirectResponse
 
 import models
 from config.database import db_dependency
-from core.auth_utils import decode_token
+from core.auth_utils import decode_token, ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_MINUTES, \
+    create_access_token, create_refresh_token, decode_refresh_token
+from core.helper import get_user_by_email
 
 customer = APIRouter()
 
@@ -23,10 +28,12 @@ async def Booking_request(
         return RedirectResponse("/?error=pick up location is require", 302)
     if destination is None:
         return RedirectResponse("/?error=pick up location is require", 302)
-
     token = request.cookies.get("access_token")
+    existing_refresh_token = request.cookies.get("refresh_token")
+
     try:
         customerData = await decode_token(token, db)
+        print(customerData.id)
         booking_new_data = models.Trips(
             user_id=customerData.id,
             car_name=car_name,
@@ -39,4 +46,27 @@ async def Booking_request(
         db.refresh(booking_new_data)
         return {"Booking request send successfully"}
     except:
-        return {"You are not Authorized! Please Login"}
+        db_user = await decode_refresh_token(existing_refresh_token, db)
+        print(db_user.email)
+
+        if db_user and db_user.password == hashlib.md5(db_user.password.encode()).hexdigest():
+            if db_user.status == 1:
+                # If the user is authenticated, generate an access token
+                access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+                refresh_token_expires = timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
+                access_token = create_access_token(db_user.email)
+                refresh_token = create_refresh_token(db_user.email)
+
+                # Update the access token in the database
+                db_user.access_token = access_token
+                db.commit()
+
+                response = RedirectResponse("/?success=Login+successfully", 302)
+                response.set_cookie(key="access_token", value=access_token, expires=access_token_expires)
+                response.set_cookie(key="refresh_token", value=refresh_token, expires=refresh_token_expires)
+                return response
+                # Return the token in the response
+                # return {"access_token": access_token, "token_type": "bearer", "user_type":1}
+            return RedirectResponse("/?error=Account+is+banned", 302)
+        return RedirectResponse("/?error=Invalid+email+or+password", 302)
+        # return {"booking failed"}
