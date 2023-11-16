@@ -49,24 +49,18 @@ async def Booking_request(
         db_user = await decode_refresh_token(existing_refresh_token, db)
         print(db_user.email)
 
-        if db_user and db_user.password == hashlib.md5(db_user.password.encode()).hexdigest():
-            if db_user.status == 1:
-                # If the user is authenticated, generate an access token
-                access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-                refresh_token_expires = timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
-                access_token = create_access_token(db_user.email)
-                refresh_token = create_refresh_token(db_user.email)
+        # If the user is authenticated, generate an access token
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        refresh_token_expires = timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(db_user.email)
+        refresh_token = create_refresh_token(db_user.email)
 
-                # Update the access token in the database
-                db_user.access_token = access_token
-                db.commit()
+        # Update the access token in the database
+        db_user.access_token = access_token
+        db.commit()
 
-                response = RedirectResponse("/?success=Login+successfully", 302)
-                response.set_cookie(key="access_token", value=access_token, expires=access_token_expires)
-                response.set_cookie(key="refresh_token", value=refresh_token, expires=refresh_token_expires)
-                return response
-                # Return the token in the response
-                # return {"access_token": access_token, "token_type": "bearer", "user_type":1}
-            return RedirectResponse("/?error=Account+is+banned", 302)
-        return RedirectResponse("/?error=Invalid+email+or+password", 302)
-        # return {"booking failed"}
+        response = RedirectResponse("/?success=create+accessToken", 404)
+        response.set_cookie(key="access_token", value=access_token, expires=access_token_expires)
+        response.set_cookie(key="refresh_token", value=refresh_token, expires=refresh_token_expires)
+        return response
+
