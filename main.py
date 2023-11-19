@@ -1,6 +1,6 @@
 import hashlib
 from fastapi import FastAPI, Form
-from starlette.responses import RedirectResponse
+from starlette.responses import RedirectResponse, JSONResponse
 import models
 
 from core.helper import get_user_by_email
@@ -50,4 +50,14 @@ async def register(
     db.add(register_db)
     db.commit()
     db.refresh(register_db)
-    return RedirectResponse("/?success=Customer+Registration+successfully", 302)
+
+    response_content = {
+        "data" : {
+            "name" : name,
+            "email" : email,
+            "password" : hashed_password
+        }
+    }
+    response = JSONResponse(content=response_content)
+    return response
+    # return RedirectResponse("/?success=Customer+Registration+successfully", 302)

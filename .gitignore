@@ -4,4 +4,6 @@ core/__pycache__
 middleware/__pycache__
 /.idea
 .idea
+.idea/*
 config/__pycache__/
+.idea/misc.xml

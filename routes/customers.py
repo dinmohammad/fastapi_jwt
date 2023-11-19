@@ -44,7 +44,15 @@ async def Booking_request(
         db.add(booking_new_data)
         db.commit()
         db.refresh(booking_new_data)
-        return {"Booking request send successfully"}
+        response_content = {
+            "data": {
+                "car_name": car_name,
+                "pick_up_location": pick_up_location,
+                "destination": destination
+            }
+        }
+        response = JSONResponse(content=response_content)
+        return response
     except:
         db_user = await decode_refresh_token(existing_refresh_token, db)
         print(db_user.email)
