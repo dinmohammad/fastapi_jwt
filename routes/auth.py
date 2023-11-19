@@ -4,7 +4,7 @@ from datetime import timedelta
 from fastapi import Form, APIRouter, Request
 from sqlalchemy import null
 from starlette import status
-from starlette.responses import RedirectResponse
+from starlette.responses import RedirectResponse, JSONResponse
 
 import models
 from config.database import db_dependency, engine
@@ -27,6 +27,7 @@ async def customer_login(
     db_user = db.query(models.Customers).filter(models.Customers.email == email).first()
     if db_user and db_user.password == hashlib.md5(password.encode()).hexdigest():
         if db_user.status == 1:
+
             # If the user is authenticated, generate an access token
             access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
             refresh_token_expires = timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
@@ -36,15 +37,29 @@ async def customer_login(
             # Update the access token in the database
             db_user.access_token = access_token
             db.commit()
-            print(f"db_user:{db_user}")
-            response = RedirectResponse("/?success=Login+successfully", 302)
+
+            # Create a dictionary with serializable values
+            response_content = {
+                "token": {
+                    "access_token": access_token,
+                    "refresh_token": refresh_token
+                },
+                "token_type": "bearer",
+                "token_expires": {
+                    "access_token_expires": access_token_expires.total_seconds(),
+                    "refresh_token_expires": refresh_token_expires.total_seconds()
+                }
+            }
+
+            # Create a JSONResponse with the serializable dictionary
+            response = JSONResponse(content=response_content)
+
             response.set_cookie(key="access_token", value=access_token, expires=access_token_expires)
             response.set_cookie(key="refresh_token", value=refresh_token, expires=refresh_token_expires)
             return response
-            # Return the token in the response
-            # return {"access_token": access_token, "token_type": "bearer", "user_type":1}
-        return RedirectResponse("/?error=Account+is+banned", 302)
-    return RedirectResponse("/?error=Invalid+email+or+password", 302)
+
+        return "/?error=Account+is+banned"
+    return "/?error=Invalid+email+or+password"
 
 
 @router.post("/logout", tags=["Authentication"])
@@ -57,8 +72,6 @@ async def logout(db: db_dependency,request: Request):
 
     token = request.cookies.get("access_token")
     customer_data = await decode_token(token, db)
-    access_token_data = customer_data.access_token
-    # print(access_token_data, customer_data.user_type)
     customer_data.access_token = "null"
     db.commit()
 

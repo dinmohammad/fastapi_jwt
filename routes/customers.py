@@ -1,14 +1,14 @@
 import hashlib
 from datetime import timedelta
 
-from fastapi import APIRouter, Form, Request
+from fastapi import APIRouter, Form, Request, HTTPException
 from starlette import status
-from starlette.responses import RedirectResponse
+from starlette.responses import RedirectResponse, JSONResponse
 
 import models
 from config.database import db_dependency
 from core.auth_utils import decode_token, ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_MINUTES, \
-    create_access_token, create_refresh_token, decode_refresh_token
+    create_access_token, create_refresh_token, decode_refresh_token, TokenDecodeError
 from core.helper import get_user_by_email
 
 customer = APIRouter()
@@ -64,3 +64,22 @@ async def Booking_request(
         response.set_cookie(key="refresh_token", value=refresh_token, expires=refresh_token_expires)
         return response
 
+
+@customer.get("/my_booking_list/", tags=["Customer"], status_code=status.HTTP_201_CREATED)
+async def booking_list(request: Request, db: db_dependency):
+    token = request.cookies.get("access_token")
+    try:
+        customer_data =  await decode_token(token, db)
+        if customer_data:
+            booking_data = db.query(models.Trips).filter(models.Trips.user_id == customer_data.id).all()
+            return {"data": booking_data}
+        else:
+           return JSONResponse(content={"error": "You are not authorized"}, status_code=403)
+    except TokenDecodeError as e:
+        return JSONResponse(content={"error": "You are not authorized"}, status_code=403)
+
+    # if not booking_data:
+    #     booking_data = None
+    #     raise HTTPException(status_code=404, detail='No posts found')
+    #     # return booking_data
+    # return {"data": booking_data}
