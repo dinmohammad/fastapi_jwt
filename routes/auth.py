@@ -27,7 +27,6 @@ async def customer_login(
     db_user = db.query(models.Customers).filter(models.Customers.email == email).first()
     if db_user and db_user.password == hashlib.md5(password.encode()).hexdigest():
         if db_user.status == 1:
-
             # If the user is authenticated, generate an access token
             access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
             refresh_token_expires = timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
@@ -63,9 +62,13 @@ async def customer_login(
 
 
 @router.post("/logout", tags=["Authentication"])
-async def logout(db: db_dependency,request: Request):
-    response = RedirectResponse(
-        '/?success=Logged+out', 302
+async def logout(db: db_dependency, request: Request):
+    response = JSONResponse(
+        content={
+            "data": {
+                "success": "successfully Logout"
+            }
+        }
     )
     response.delete_cookie("access_token")
     response.delete_cookie("refresh_token")

@@ -53,9 +53,11 @@ async def register(
 
     response_content = {
         "data" : {
-            "name" : name,
             "email" : email,
-            "password" : hashed_password
+        "data": {
+            "name": name,
+            "email": email,
+            "password": hashed_password
         }
     }
     response = JSONResponse(content=response_content)

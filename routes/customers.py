@@ -67,7 +67,14 @@ async def Booking_request(
         db_user.access_token = access_token
         db.commit()
 
-        response = RedirectResponse("/?success=create+accessToken", 404)
+        response_content = {
+            "data": {
+                "car_name": car_name,
+                "pick_up_location": pick_up_location,
+                "destination": destination
+            }
+        }
+        response = JSONResponse(content=response_content)
         response.set_cookie(key="access_token", value=access_token, expires=access_token_expires)
         response.set_cookie(key="refresh_token", value=refresh_token, expires=refresh_token_expires)
         return response
