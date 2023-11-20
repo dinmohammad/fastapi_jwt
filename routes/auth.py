@@ -1,7 +1,7 @@
 import hashlib
 from datetime import timedelta
 
-from fastapi import Form, APIRouter, Request
+from fastapi import Form, APIRouter, Request, Response
 from sqlalchemy import null
 from starlette import status
 from starlette.responses import RedirectResponse, JSONResponse
@@ -62,7 +62,7 @@ async def customer_login(
 
 
 @router.post("/logout", tags=["Authentication"])
-async def logout(db: db_dependency, request: Request):
+async def logout(db: db_dependency, request: Request, response: Response):
     response = JSONResponse(
         content={
             "data": {

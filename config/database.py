@@ -5,8 +5,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 
-# DATABASE_URL = "mysql+pymysql://root:nrb1234@localhost:3306/gorib_database"
-DATABASE_URL = "mysql+pymysql://root:12345@localhost:3306/gorib_database"
+DATABASE_URL = "mysql+pymysql://root:nrb1234@localhost:3306/gorib_database"
+# DATABASE_URL = "mysql+pymysql://root:12345@localhost:3306/gorib_database"
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

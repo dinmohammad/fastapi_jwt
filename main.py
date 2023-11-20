@@ -52,8 +52,6 @@ async def register(
     db.refresh(register_db)
 
     response_content = {
-        "data" : {
-            "email" : email,
         "data": {
             "name": name,
             "email": email,
