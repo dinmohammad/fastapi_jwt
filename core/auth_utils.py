@@ -73,10 +73,9 @@ async def decode_refresh_token(r_token, db):
             if is_check_customer:
                 return is_check_customer
             print("you r authorized")
-            return 0
         except jwt.JWTError as e:
             print(f"Error decoding token: {e}")
             raise TokenDecodeError("You are not authorized")
     else:
         print("No token found in cookies")
-        raise TokenDecodeError("You are not authorized")
+        raise TokenDecodeError("You are not authorized" )

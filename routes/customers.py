@@ -85,26 +85,26 @@ async def booking_list(request: Request, response: Response, db: db_dependency):
 
     try:
         customer_data = await decode_token(token, db)
-        if customer_data:
-            booking_data = db.query(models.Trips).filter(models.Trips.user_id == customer_data.id).all()
-            return {"data": booking_data}
+        booking_data = db.query(models.Trips).filter(models.Trips.user_id == customer_data.id).all()
+        return {"data": booking_data}
     except Exception as e:
-        db_user = await decode_refresh_token(existing_refresh_token, db)
-        if db_user:
+        try:
+            customer_data = await decode_refresh_token(existing_refresh_token, db)
             # If the user is authenticated, generate an access token
             access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
             refresh_token_expires = timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
-            access_token = create_access_token(db_user.email)
-            refresh_token = create_refresh_token(db_user.email)
+            access_token = create_access_token(customer_data.email)
+            refresh_token = create_refresh_token(customer_data.email)
 
             # Update the access token in the database
-            db_user.access_token = access_token
+            customer_data.access_token = access_token
             db.commit()
 
-            booking_data = db.query(models.Trips).filter(models.Trips.user_id == db_user.id).all()
-            response.set_cookie(key="access_token", value=access_token, expires=access_token_expires, secure=True, httponly=True, samesite="Lax")
-            response.set_cookie(key="refresh_token", value=refresh_token, expires=refresh_token_expires, secure=True, httponly=True, samesite="Lax")
-
+            booking_data = db.query(models.Trips).filter(models.Trips.user_id == customer_data.id).all()
+            response.set_cookie(key="access_token", value=access_token, expires=access_token_expires, secure=True,
+                                httponly=True, samesite="Lax")
+            response.set_cookie(key="refresh_token", value=refresh_token, expires=refresh_token_expires, secure=True,
+                                httponly=True, samesite="Lax")
             return {"data": booking_data}
-        else:
-            return {"error": "authentication Finshed! Please login"}
+        except Exception as e:
+            return {"data": e}
